@@ -13,57 +13,64 @@ import java.io.*;
 
 import javax.swing.*;
 
-public class ConflictGUI extends Frame implements ActionListener{
+public class SchedulingToolPanel extends JPanel implements ActionListener{
 	
-	private JFrame frame;
-	private JPanel panel;
+
+	private JPanel textFieldPanel;
+	private JPanel buttonPanel;
 	private JButton importButton;
 	private JButton exportButton;
 	private JButton csvButton;
 	private JTextArea textField;
+	private JTextArea textFieldReport;
 	
-	ConflictGUI(){
-		frame = new JFrame();
-		frame.setSize(new Dimension(400,400));
+	SchedulingToolPanel(){
+	
+		//Panel For Text Fields
+		textFieldPanel = new JPanel();
+		textFieldPanel.setBackground(Color.darkGray);
 		
-		panel = new JPanel();
-		panel.setBackground(Color.darkGray);
-		frame.getContentPane().add(panel);
 		textField = new JTextArea();
-		textField.setPreferredSize(new Dimension(350,300));
+		textField.setPreferredSize(new Dimension(400,500));
 		textField.setEditable(true);
 		textField.setLineWrap(true);
 		textField.setAutoscrolls(true);
+		textField.setText("Constraints");
+		
+		textFieldReport = new JTextArea();
+		textFieldReport.setPreferredSize(new Dimension(400,500));
+		textFieldReport.setText("Report Generated");
+		
 //		JScrollPane scroll = new JScrollPane (textField);
 //		scroll.setPreferredSize(new Dimension(10,200));
 //		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
-		textField.setText("temp Strings");
-		panel.add(textField);
+		textFieldPanel.add(textField);
+		textFieldPanel.add(textFieldReport);
+		
+		//Panel For Buttons
+		buttonPanel = new JPanel();
+		buttonPanel.setBackground(Color.darkGray);
+		
 		importButton = new JButton("Import");
 		exportButton = new JButton("Export");
 		csvButton = new JButton("CSV");
-		panel.add(importButton);
-		panel.add(exportButton);
-		panel.add(csvButton);
+		buttonPanel.add(importButton);
+		buttonPanel.add(exportButton);
+		buttonPanel.add(csvButton);
 		
-		frame.setLocationRelativeTo(null);
-		frame.setTitle("Simple Mockup Design");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setResizable(false);
-		frame.setVisible(true);
+		this.setLayout(new BorderLayout());
+		this.add(textFieldPanel, BorderLayout.CENTER);
+		this.add(buttonPanel, BorderLayout.SOUTH);
+		
 		
 		importButton.addActionListener(this);
 	}
-	public static void main(String[] args) {
-		ConflictGUI gui = new ConflictGUI();
-	}
+
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 	
-		//textField.setText("Hello");
-		//File file = new File("resources/textConstraints.txt");
+		
 		FileReader fr = null;
 		try {
 			fr = new FileReader("resources/textConstraints.txt");
