@@ -8,6 +8,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.*;
+
 
 import javax.swing.*;
 
@@ -60,11 +62,11 @@ public class ConflictGUI extends Frame implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 	
-		textField.setText("Hello");
+		//textField.setText("Hello");
+		File file = new File("resources/textConstraints.txt");
 		FileReader fr = null;
 		try {
-			fr = new FileReader("/Users/davidtovar/cs453/Conflict "
-					+ "Tool/Resources/textConstraints.txt");
+			fr = new FileReader(file);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -82,8 +84,7 @@ public class ConflictGUI extends Frame implements ActionListener{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-
-		textField.setText(b.toString());
+				textField.setText(b.toString());
 		
 	}
 
