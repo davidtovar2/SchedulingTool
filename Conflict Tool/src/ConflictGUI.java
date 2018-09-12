@@ -1,15 +1,33 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import javax.swing.*;
 
-public class ConflictGUI {
-	public static void main(String[] args) {
-		JFrame frame = new JFrame();
+public class ConflictGUI extends Frame implements ActionListener{
+	
+	private JFrame frame;
+	private JPanel panel;
+	private JButton importButton;
+	private JButton exportButton;
+	private JButton csvButton;
+	private JTextArea textField;
+	
+	ConflictGUI(){
+		frame = new JFrame();
 		frame.setSize(new Dimension(400,400));
 		
-		JPanel panel = new JPanel();
+		panel = new JPanel();
 		panel.setBackground(Color.darkGray);
 		frame.getContentPane().add(panel);
-		JTextArea textField = new JTextArea();
+		textField = new JTextArea();
 		textField.setPreferredSize(new Dimension(350,300));
 		textField.setEditable(true);
 		textField.setLineWrap(true);
@@ -20,9 +38,9 @@ public class ConflictGUI {
 
 		textField.setText("temp Strings");
 		panel.add(textField);
-		JButton importButton = new JButton("Import");
-		JButton exportButton = new JButton("Export");
-		JButton csvButton = new JButton("CSV");
+		importButton = new JButton("Import");
+		exportButton = new JButton("Export");
+		csvButton = new JButton("CSV");
 		panel.add(importButton);
 		panel.add(exportButton);
 		panel.add(csvButton);
@@ -32,6 +50,41 @@ public class ConflictGUI {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 		frame.setVisible(true);
+		
+		importButton.addActionListener(this);
+	}
+	public static void main(String[] args) {
+		ConflictGUI gui = new ConflictGUI();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+	
+		textField.setText("Hello");
+		FileReader fr = null;
+		try {
+			fr = new FileReader("/Users/davidtovar/cs453/Conflict "
+					+ "Tool/Resources/textConstraints.txt");
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		BufferedReader myInput = new BufferedReader(fr);
+
+		String s;
+		StringBuffer b = new StringBuffer();
+		try {
+			while ((s = myInput.readLine()) != null) {
+			b.append(s);
+			b.append("\n");
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		textField.setText(b.toString());
+		
 	}
 
 }
