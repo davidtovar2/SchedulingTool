@@ -63,10 +63,10 @@ public class ConflictGUI extends Frame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 	
 		//textField.setText("Hello");
-		File file = new File("resources/textConstraints.txt");
+		//File file = new File("resources/textConstraints.txt");
 		FileReader fr = null;
 		try {
-			fr = new FileReader(file);
+			fr = new FileReader("resources/textConstraints.txt");
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
