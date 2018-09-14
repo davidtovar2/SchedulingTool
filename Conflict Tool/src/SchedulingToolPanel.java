@@ -13,6 +13,9 @@ import java.io.*;
 
 import javax.swing.*;
 
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 public class SchedulingToolPanel extends JPanel implements ActionListener{
 	
 
@@ -71,7 +74,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 	
 		
-		FileReader fr = null;
+		/*FileReader fr = null;
 		try {
 			fr = new FileReader("resources/textConstraints.txt");
 		} catch (FileNotFoundException e1) {
@@ -91,8 +94,10 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-				textField.setText(b.toString());
+				textField.setText(b.toString());*/
 		
+		final JFileChooser fc = new JFileChooser();
+		fc.showOpenDialog(this);
 	}
 
 }
