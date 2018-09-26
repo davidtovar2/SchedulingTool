@@ -40,8 +40,13 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 		textField.setAutoscrolls(true);
 		textField.setText("Constraints");
 		
+		int tfHeight = textField.getHeight();
+		int tfWidth = textField.getWidth();
+		
 		textFieldReport = new JTextArea();
-		textFieldReport.setPreferredSize(new Dimension(400,500));
+		//textFieldReport.setPreferredSize(new Dimension(400, 500));
+		textFieldReport.setBounds(0, 510, 
+				tfWidth, tfHeight - (tfHeight - 20));
 		textFieldReport.setText("Report Generated");
 		
 //		JScrollPane scroll = new JScrollPane (textField);
@@ -74,9 +79,47 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 	
 		
-		/*FileReader fr = null;
+		JButton src = (JButton) e.getSource();
+		
+		if (src == importButton){
+			
+			chooseFile();
+		
+			/*File file = new File(chooseFile().getPath());
+			
+			FileReader fr = null;
+			try {
+				fr = new FileReader(chooseFile().getPath());
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			BufferedReader myInput = new BufferedReader(fr);
+
+			String s;
+			StringBuffer b = new StringBuffer();
+			try {
+				while ((s = myInput.readLine()) != null) {
+				b.append(s);
+				b.append("\n");
+				}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			b.append(chooseFile().getPath());
+					textField.setText(b.toString());
+		}else if(src == exportButton){
+			
+		}else if( src == csvButton){*/
+			
+		}
+		
+		/*File file = new File(chooseFile().getAbsolutePath());
+		
+		FileReader fr = null;
 		try {
-			fr = new FileReader("resources/textConstraints.txt");
+			fr = new FileReader(chooseFile().getAbsolutePath());
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -94,10 +137,21 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		b.append(chooseFile().getAbsolutePath());
 				textField.setText(b.toString());*/
+	
+		
+	}
+	
+	private File chooseFile(){
 		
 		final JFileChooser fc = new JFileChooser();
 		fc.showOpenDialog(this);
+		
+		textFieldReport.setText(fc.getSelectedFile().getPath());
+		
+		return fc.getSelectedFile();
+		
 	}
 
 }
