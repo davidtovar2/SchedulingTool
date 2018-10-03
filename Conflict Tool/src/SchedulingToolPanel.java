@@ -1,22 +1,20 @@
 import java.awt.*;
+import java.io.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.*;
-
 
 import javax.swing.*;
 
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class SchedulingToolPanel extends JPanel implements ActionListener{
+public class SchedulingToolPanel extends JPanel implements ActionListener {
 	
 
 	private JPanel textFieldPanel;
@@ -48,6 +46,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 		textFieldReport.setBounds(0, 510, 
 				tfWidth, tfHeight - (tfHeight - 20));
 		textFieldReport.setText("Report Generated");
+		textFieldReport.setEditable(false);
 		
 //		JScrollPane scroll = new JScrollPane (textField);
 //		scroll.setPreferredSize(new Dimension(10,200));
@@ -72,6 +71,8 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 		
 		
 		importButton.addActionListener(this);
+		exportButton.addActionListener(this);
+		
 	}
 
 
@@ -83,43 +84,36 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 		
 		if (src == importButton){
 			
-			chooseFile();
-		
-			/*File file = new File(chooseFile().getPath());
+			//chooseFile();
+			//loadConstraints();	
 			
-			FileReader fr = null;
-			try {
-				fr = new FileReader(chooseFile().getPath());
-			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			BufferedReader myInput = new BufferedReader(fr);
-
-			String s;
-			StringBuffer b = new StringBuffer();
-			try {
-				while ((s = myInput.readLine()) != null) {
-				b.append(s);
-				b.append("\n");
-				}
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			b.append(chooseFile().getPath());
-					textField.setText(b.toString());
-		}else if(src == exportButton){
+		} else if (src == exportButton){
 			
-		}else if( src == csvButton){*/
+			test();
+		}else if( src == csvButton){
 			
 		}
 		
-		/*File file = new File(chooseFile().getAbsolutePath());
+		
+	}
+	
+	private File chooseFile(){
+		
+		final JFileChooser fc = new JFileChooser();
+		fc.showOpenDialog(this);
+		
+		textFieldReport.setText(fc.getSelectedFile().getPath());
+		
+		return fc.getSelectedFile();
+		
+	}
+	
+	private void loadConstraints(){
 		
 		FileReader fr = null;
+		File file = new File("resources/textConstraints.txt");
 		try {
-			fr = new FileReader(chooseFile().getAbsolutePath());
+			fr = new FileReader(file);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -137,21 +131,58 @@ public class SchedulingToolPanel extends JPanel implements ActionListener{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		b.append(chooseFile().getAbsolutePath());
-				textField.setText(b.toString());*/
-	
-		
-	}
-	
-	private File chooseFile(){
-		
-		final JFileChooser fc = new JFileChooser();
-		fc.showOpenDialog(this);
-		
-		textFieldReport.setText(fc.getSelectedFile().getPath());
-		
-		return fc.getSelectedFile();
-		
+			textField.setText(b.toString());
 	}
 
+	public void test(){
+		XSSFWorkbook workbook = new XSSFWorkbook();
+		
+		XSSFSheet sheet = workbook.createSheet("Persons");
+		sheet.setColumnWidth(0, 6000);
+		sheet.setColumnWidth(1, 4000);
+		 
+		XSSFRow header = sheet.createRow(0);
+		 
+		CellStyle headerStyle = workbook.createCellStyle();
+		headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+		headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		 
+		XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+		font.setFontName("Arial");
+		font.setFontHeightInPoints((short) 16);
+		font.setBold(true);
+		headerStyle.setFont(font);
+		 
+		XSSFCell headerCell = header.createCell(0);
+		headerCell.setCellValue("Name");
+		headerCell.setCellStyle(headerStyle);
+		 
+		headerCell = header.createCell(1);
+		headerCell.setCellValue("Age");
+		headerCell.setCellStyle(headerStyle);
+		
+		//File currDir = new File(".");
+		//String path = currDir.getAbsolutePath();
+		String fileLocation = "/Users/davidtovar/Documents/" + "temp.xlsx"; 
+	
+		FileOutputStream outputStream = null;
+		try {
+			outputStream = new FileOutputStream(fileLocation);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			workbook.write(outputStream);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			workbook.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
 }
