@@ -5,9 +5,14 @@ import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
-import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -84,12 +89,13 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 		if (src == importButton){
 			
-			//chooseFile();
-			//loadConstraints();	
+			chooseFile();
+			loadConstraints();	
 			
 		} else if (src == exportButton){
-			
-			test();
+	
+			//test();
+			updateWorkbook();
 		}else if( src == csvButton){
 			
 		}
@@ -143,7 +149,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		 
 		XSSFRow header = sheet.createRow(0);
 		 
-		CellStyle headerStyle = workbook.createCellStyle();
+		XSSFCellStyle headerStyle = workbook.createCellStyle();
 		headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
 		headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 		 
@@ -185,4 +191,79 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			e1.printStackTrace();
 		}
 	}
+	
+	public void updateWorkbook(){
+		
+		try {
+			
+		FileInputStream inputStream = new FileInputStream(new File("/Users/davidtovar/Downloads/Spring 2019 Validation Report Example (1).xlsx"));
+        XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+		//XSSFWorkbook workbook = (XSSFWorkbook) WorkbookFactory.create(inputStream);
+        
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        
+        int maxColumn = 0;
+        int columnToDelete = 0;
+        for ( int r=0; r < sheet.getLastRowNum()+1; r++ ){
+            
+        	XSSFRow row = sheet.getRow( r );
+            
+            if ( row == null )
+                continue;
+            
+            int lastColumn = row.getLastCellNum();
+            if ( lastColumn > maxColumn )
+                maxColumn = lastColumn;
+            
+            if ( lastColumn < columnToDelete )
+                continue;
+            
+            for ( int x=columnToDelete+1; x < lastColumn + 1; x++ ){
+                XSSFCell oldCell = row.getCell(x-1);
+                if ( oldCell != null )
+                    row.removeCell( oldCell );
+                	
+                XSSFCell nextCell = row.getCell( x );
+                if ( nextCell != null ){
+                    @SuppressWarnings("deprecation")
+					XSSFCell newCell = row.createCell(x-1, nextCell.getCellType());
+                    cloneCell(newCell, nextCell);
+                }
+            }
+            
+            inputStream.close();
+            
+            FileOutputStream outputStream = new FileOutputStream("/Users/davidtovar/Documents/" + "temp.xlsx");
+            workbook.write(outputStream);
+           // workbook.close();
+            outputStream.close();
+            
+        }
+        
+		} catch (IOException | EncryptedDocumentException e){
+			// TODO
+			e.printStackTrace();
+		} 
+	}
+
+	private static void cloneCell( XSSFCell cNew, XSSFCell cOld ){
+	       
+			cNew.setCellComment( cOld.getCellComment() );
+	        cNew.setCellStyle( cOld.getCellStyle() );
+	        
+	        if (CellType.BOOLEAN == cNew.getCellTypeEnum()) {
+	            cNew.setCellValue(cOld.getBooleanCellValue());
+	        } else if (CellType.NUMERIC == cNew.getCellTypeEnum()) {
+	            cNew.setCellValue(cOld.getNumericCellValue());
+	        } else if (CellType.STRING == cNew.getCellTypeEnum()) {
+	            cNew.setCellValue(cOld.getStringCellValue());
+	        } else if (CellType.ERROR == cNew.getCellTypeEnum()) {
+	            cNew.setCellValue(cOld.getErrorCellValue());
+	        } else if (CellType.FORMULA == cNew.getCellTypeEnum()) {
+	            cNew.setCellValue(cOld.getCellFormula());
+	        } else {
+	        	cNew.setCellValue(cOld.getNumericCellValue());
+	        }
+
+	    }
 }
