@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.io.*;
+import java.util.Iterator;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -8,10 +9,12 @@ import javax.swing.*;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -35,29 +38,24 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		//Panel For Text Fields
 		textFieldPanel = new JPanel();
 		textFieldPanel.setBackground(Color.darkGray);
+		textFieldPanel.setLayout(new BorderLayout(5,5));
 		
 		textField = new JTextArea();
-		textField.setPreferredSize(new Dimension(400,500));
+		textField.setPreferredSize(new Dimension(600,400));
 		textField.setEditable(true);
 		textField.setLineWrap(true);
-		textField.setAutoscrolls(true);
-		textField.setText("Constraints");
-		
-		int tfHeight = textField.getHeight();
-		int tfWidth = textField.getWidth();
+	
 		
 		textFieldReport = new JTextArea();
-		//textFieldReport.setPreferredSize(new Dimension(400, 500));
-		textFieldReport.setBounds(0, 510, 
-				tfWidth, tfHeight - (tfHeight - 20));
-		textFieldReport.setText("Report Generated");
+		textFieldReport.setPreferredSize(new Dimension(400, 50));
+		textFieldReport.setText("Please Select a File - Import");
 		textFieldReport.setEditable(false);
 		
 //		JScrollPane scroll = new JScrollPane (textField);
 //		scroll.setPreferredSize(new Dimension(10,200));
 //		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		textFieldPanel.add(textField);
-		textFieldPanel.add(textFieldReport);
+		textFieldPanel.add(textField,BorderLayout.CENTER);
+		textFieldPanel.add(textFieldReport,BorderLayout.SOUTH);
 		
 		//Panel For Buttons
 		buttonPanel = new JPanel();
@@ -70,9 +68,21 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		buttonPanel.add(exportButton);
 		buttonPanel.add(csvButton);
 		
-		this.setLayout(new BorderLayout());
+		JPanel emptyPanel = new JPanel();
+		emptyPanel.setBackground(Color.DARK_GRAY);
+		
+		JPanel emptyPanel1 = new JPanel();
+		emptyPanel1.setBackground(Color.DARK_GRAY);
+		JPanel emptyPanel2 = new JPanel();
+		emptyPanel2.setBackground(Color.DARK_GRAY);
+		
+		this.setBackground(Color.DARK_GRAY);
+		this.setLayout(new BorderLayout(5,5));
 		this.add(textFieldPanel, BorderLayout.CENTER);
 		this.add(buttonPanel, BorderLayout.SOUTH);
+		this.add(emptyPanel, BorderLayout.EAST);
+		this.add(emptyPanel1, BorderLayout.WEST);
+		this.add(emptyPanel2, BorderLayout.NORTH);
 		
 		
 		importButton.addActionListener(this);
@@ -93,7 +103,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			loadConstraints();	
 			
 		} else if (src == exportButton){
-	
+			JOptionPaneTest();
 			//test();
 			updateWorkbook();
 		}else if( src == csvButton){
@@ -108,7 +118,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		final JFileChooser fc = new JFileChooser();
 		fc.showOpenDialog(this);
 		
-		textFieldReport.setText(fc.getSelectedFile().getPath());
+		textFieldReport.setText("New Import File:\n" + fc.getSelectedFile().getPath());
 		
 		return fc.getSelectedFile();
 		
@@ -169,7 +179,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 		//File currDir = new File(".");
 		//String path = currDir.getAbsolutePath();
-		String fileLocation = "/Users/davidtovar/Documents/" + "temp.xlsx"; 
+		String fileLocation = "/Users/jolsen/Documents/" + "temp.xlsx"; 
 	
 		FileOutputStream outputStream = null;
 		try {
@@ -196,48 +206,62 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 		try {
 			
-		FileInputStream inputStream = new FileInputStream(new File("/Users/davidtovar/Downloads/Spring 2019 Validation Report Example (1).xlsx"));
+		FileInputStream inputStream = new FileInputStream(new File("/Users/jolsen/Downloads/Spring 2019 Validation Report Example.xlsx"));
         XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
-		//XSSFWorkbook workbook = (XSSFWorkbook) WorkbookFactory.create(inputStream);
         
         XSSFSheet sheet = workbook.getSheetAt(0);
-        
+		
         int maxColumn = 0;
-        int columnToDelete = 0;
-        for ( int r=0; r < sheet.getLastRowNum()+1; r++ ){
+        int[] columnDeleteIndex = {31,30,29,28,27,26,25,23,22,21,20,19,18,15,14,13,12,11,10,9,8,6,5,4,3};
+        for(int columnToDelete:columnDeleteIndex) {
+        	for ( int r=0; r < sheet.getLastRowNum()+1; r++ ){
             
-        	XSSFRow row = sheet.getRow( r );
+        		XSSFRow row = sheet.getRow( r );
             
-            if ( row == null )
-                continue;
+        		if ( row == null )
+        			continue;
             
-            int lastColumn = row.getLastCellNum();
-            if ( lastColumn > maxColumn )
-                maxColumn = lastColumn;
+        		int lastColumn = row.getLastCellNum();
+        		if ( lastColumn > maxColumn )
+        			maxColumn = lastColumn;
             
-            if ( lastColumn < columnToDelete )
-                continue;
+        		if ( lastColumn < columnToDelete )
+        			continue;
             
-            for ( int x=columnToDelete+1; x < lastColumn + 1; x++ ){
-                XSSFCell oldCell = row.getCell(x-1);
-                if ( oldCell != null )
-                    row.removeCell( oldCell );
+        		for ( int x=columnToDelete+1; x < lastColumn + 1; x++ ){
+        			XSSFCell oldCell = row.getCell(x-1);
+        			if ( oldCell != null )
+        				row.removeCell( oldCell );
                 	
-                XSSFCell nextCell = row.getCell( x );
-                if ( nextCell != null ){
-                    @SuppressWarnings("deprecation")
-					XSSFCell newCell = row.createCell(x-1, nextCell.getCellType());
-                    cloneCell(newCell, nextCell);
-                }
-            }
-            
+        			XSSFCell nextCell = row.getCell( x );
+        			if ( nextCell != null ){
+        				@SuppressWarnings("deprecation")
+        				XSSFCell newCell = row.createCell(x-1, nextCell.getCellType());
+        				cloneCell(newCell, nextCell);
+        			}
+        		}
+        	}
             inputStream.close();
             
-            FileOutputStream outputStream = new FileOutputStream("/Users/davidtovar/Documents/" + "temp.xlsx");
+            for (Row myrow : sheet){
+                sheet.setColumnWidth(myrow.getRowNum(), 6000);;
+                for (Cell mycell : myrow){
+                    if (myrow.getRowNum() == 1 || myrow.getRowNum() == 19) {
+                		XSSFCellStyle style = workbook.createCellStyle();
+                        XSSFFont font = workbook.createFont();
+                        font.setColor(IndexedColors.RED.getIndex());
+                		font.setBold(true);
+                		style.setFont(font);
+                        mycell.setCellStyle(style);
+                    }
+                }
+            }
+            FileOutputStream outputStream = new FileOutputStream("/Users/jolsen/Documents/" + "temp.xlsx");
             workbook.write(outputStream);
-           // workbook.close();
+//            workbook.close();
+            textFieldReport.setText("New Export File:\n" + "C:\\Users\\jolsen\\Documents\\" + "temp.xlsx");
             outputStream.close();
-            
+
         }
         
 		} catch (IOException | EncryptedDocumentException e){
@@ -266,4 +290,17 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	        }
 
 	    }
+	private static void JOptionPaneTest() {
+		    JDialog.setDefaultLookAndFeelDecorated(true);
+		    int response = JOptionPane.showConfirmDialog(null, "Do you want to save Constraints?", "Constraints Changed",
+		        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		    if (response == JOptionPane.NO_OPTION) {
+		      
+		    } else if (response == JOptionPane.YES_OPTION) {
+		      
+		    } else if (response == JOptionPane.CLOSED_OPTION) {
+		    	
+		    }
+		  
+		}
 }
