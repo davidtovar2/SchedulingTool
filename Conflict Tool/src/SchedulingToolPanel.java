@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.io.*;
-import java.util.Iterator;
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -30,11 +32,15 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	private JButton importButton;
 	private JButton exportButton;
 	private JButton csvButton;
+	private JButton constraintsButton;
 	private JTextArea textField;
 	private JTextArea textFieldReport;
+	private File constraints;
+	private ArrayList<Course> courseList = new ArrayList<Course>();
 	
 	SchedulingToolPanel(){
 	
+		constraints = new File("resources/textConstraints.txt");
 		//Panel For Text Fields
 		textFieldPanel = new JPanel();
 		textFieldPanel.setBackground(Color.darkGray);
@@ -64,6 +70,8 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		importButton = new JButton("Import");
 		exportButton = new JButton("Export");
 		csvButton = new JButton("CSV");
+		constraintsButton = new JButton("Constraints");
+		buttonPanel.add(constraintsButton);
 		buttonPanel.add(importButton);
 		buttonPanel.add(exportButton);
 		buttonPanel.add(csvButton);
@@ -84,9 +92,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		this.add(emptyPanel1, BorderLayout.WEST);
 		this.add(emptyPanel2, BorderLayout.NORTH);
 		
-		
 		importButton.addActionListener(this);
 		exportButton.addActionListener(this);
+		constraintsButton.addActionListener(this);
 		
 	}
 
@@ -108,6 +116,8 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			updateWorkbook();
 		}else if( src == csvButton){
 			
+		}else if(src == constraintsButton) {
+			constraints = constraintsFile();
 		}
 		
 		
@@ -124,12 +134,25 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 	}
 	
+	// opens Constraints file location.
+	private File constraintsFile(){
+		
+		final JFileChooser fc = new JFileChooser();
+		File constraintsArea = new File("C:\\Users\\jolsen\\eclipse-workspace\\ConflictMngTool\\Resources");
+		fc.setCurrentDirectory(constraintsArea);
+		fc.showOpenDialog(this);
+		
+		textFieldReport.setText("New Constraints File:\n" + fc.getSelectedFile().getPath());
+		
+		return fc.getSelectedFile();
+		
+	}
+	
 	private void loadConstraints(){
 		
 		FileReader fr = null;
-		File file = new File("resources/textConstraints.txt");
 		try {
-			fr = new FileReader(file);
+			fr = new FileReader(constraints);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -212,7 +235,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
         XSSFSheet sheet = workbook.getSheetAt(0);
 		
         int maxColumn = 0;
-        int[] columnDeleteIndex = {31,30,29,28,27,26,25,23,22,21,20,19,18,15,14,13,12,11,10,9,8,6,5,4,3};
+        int[] columnDeleteIndex = {31,30,29,28,27,26,25,23,22,21,20,18,15,14,13,12,11,10,9,8,6,5,4,3};
         for(int columnToDelete:columnDeleteIndex) {
         	for ( int r=0; r < sheet.getLastRowNum()+1; r++ ){
             
@@ -241,29 +264,24 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
         			}
         		}
         	}
-            inputStream.close();
-            
-            for (Row myrow : sheet){
-                sheet.setColumnWidth(myrow.getRowNum(), 6000);;
-                for (Cell mycell : myrow){
-                    if (myrow.getRowNum() == 1 || myrow.getRowNum() == 19) {
-                		XSSFCellStyle style = workbook.createCellStyle();
-                        XSSFFont font = workbook.createFont();
-                        font.setColor(IndexedColors.RED.getIndex());
-                		font.setBold(true);
-                		style.setFont(font);
-                        mycell.setCellStyle(style);
-                    }
-                }
-            }
-            FileOutputStream outputStream = new FileOutputStream("/Users/jolsen/Documents/" + "temp.xlsx");
-            workbook.write(outputStream);
-//            workbook.close();
-            textFieldReport.setText("New Export File:\n" + "C:\\Users\\jolsen\\Documents\\" + "temp.xlsx");
-            outputStream.close();
-
         }
+        inputStream.close();
         
+        // runs through sheet, adding all rows that have time slots as courses into CourseList
+        for (Row myRow: sheet) {
+    		if (myRow.getCell(4) == null || myRow.getRowNum() == 0) {
+    		}else {	
+            	courseList.add(addCourse(myRow));
+        	}
+        }
+        checkProfessors(courseList,workbook);
+        
+        FileOutputStream outputStream = new FileOutputStream("/Users/jolsen/Documents/" + "temp.xlsx");
+        workbook.write(outputStream);
+//        workbook.close();
+        textFieldReport.setText("New Export File:\n" + "C:\\Users\\jolsen\\Documents\\" + "temp.xlsx");
+        outputStream.close();
+
 		} catch (IOException | EncryptedDocumentException e){
 			// TODO
 			e.printStackTrace();
@@ -297,10 +315,61 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		    if (response == JOptionPane.NO_OPTION) {
 		      
 		    } else if (response == JOptionPane.YES_OPTION) {
-		      
+
 		    } else if (response == JOptionPane.CLOSED_OPTION) {
 		    	
 		    }
 		  
 		}
+	
+	// Breaks down time Slot value down to individual hours and minutes so that it can be
+	// entered into a the Course as a java Time value.  Should account for pm values.
+	// Further work needs to be done breaking the days value down into measurable, and
+	// comparable values. possible 1-5 for each day, so that it can be easily calculated.
+	// Currently prints the course to be added to the console for error checking.
+	private static Course addCourse(Row newCourse) {
+			char[] timeBreak = newCourse.getCell(4).toString().toCharArray();
+			int startHour = timeBreak[1]-'0' + (timeBreak[0]-'0')*10;
+			int endHour = timeBreak[10]-'0' + (timeBreak[9]-'0')*10;
+			int startMinute = timeBreak[4]-'0' + (timeBreak[3]-'0')*10;
+			int endMinute = timeBreak[13]-'0' + (timeBreak[12]-'0')*10;
+			String days = null;
+			StringTokenizer daysBreak = new StringTokenizer(newCourse.getCell(4).toString());
+			while (daysBreak.hasMoreElements()) {
+				days = (String)daysBreak.nextElement();
+			}
+			if (timeBreak[6] == 'p' && startHour != 12) {
+				startHour+=12;
+			}
+			if (timeBreak[15] == 'p' && endHour != 12) {
+				endHour+=12;
+			}
+			Time startTime = new Time(startHour, startMinute, 0);
+			Time endTime = new Time(endHour, endMinute, 0);
+			Course course = new Course(newCourse.getRowNum(),newCourse.getCell(2).toString(), startTime, endTime, days, newCourse.getCell(7).toString(), newCourse.getCell(6).toString());
+			System.out.print(course.toString());
+			return course;
+	}
+	
+	// Takes courseList and workbook for comparisons and highlighting fields that are in Conflict.
+	private static void checkProfessors(ArrayList<Course> courseList,XSSFWorkbook workbook) {
+		
+		XSSFSheet sheet = workbook.getSheetAt(0);
+		XSSFCellStyle style = workbook.createCellStyle();
+		XSSFFont font = workbook.createFont();
+		font.setColor(IndexedColors.RED.getIndex());
+		font.setBold(true);
+		style.setFont(font);
+		
+		for(Course currentCourse:courseList) {
+			for(Course checkCourse:courseList) {
+				if (currentCourse.conflict(checkCourse)) {
+					Row conflictRow = sheet.getRow(currentCourse.getRowID());
+            		for (Cell testcell : conflictRow){
+        				testcell.setCellStyle(style);
+            		}
+				}
+			}
+		}
+	}
 }
