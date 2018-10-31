@@ -31,7 +31,6 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	private JPanel buttonPanel;
 	private JButton importButton;
 	private JButton exportButton;
-	private JButton csvButton;
 	private JButton constraintsButton;
 	private JTextArea textField;
 	private JTextArea textFieldReport;
@@ -69,12 +68,10 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 		importButton = new JButton("Import");
 		exportButton = new JButton("Export");
-		csvButton = new JButton("CSV");
 		constraintsButton = new JButton("Constraints");
 		buttonPanel.add(constraintsButton);
 		buttonPanel.add(importButton);
 		buttonPanel.add(exportButton);
-		buttonPanel.add(csvButton);
 		
 		JPanel emptyPanel = new JPanel();
 		emptyPanel.setBackground(Color.DARK_GRAY);
@@ -111,11 +108,8 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			loadConstraints();	
 			
 		} else if (src == exportButton){
-			JOptionPaneTest();
 			//test();
 			updateWorkbook();
-		}else if( src == csvButton){
-			
 		}else if(src == constraintsButton) {
 			constraints = constraintsFile();
 		}
@@ -268,13 +262,17 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
         inputStream.close();
         
         // runs through sheet, adding all rows that have time slots as courses into CourseList
+        sheet.createFreezePane(0, 1);
+        for ( int r=0; r < sheet.getLastRowNum(); r++ ) {
+            sheet.autoSizeColumn(r);
+        }
         for (Row myRow: sheet) {
     		if (myRow.getCell(4) == null || myRow.getRowNum() == 0) {
     		}else {	
             	courseList.add(addCourse(myRow));
         	}
         }
-        checkProfessors(courseList,workbook);
+        checkProfessorsRooms(courseList,workbook);
         
         FileOutputStream outputStream = new FileOutputStream("/Users/jolsen/Documents/" + "temp.xlsx");
         workbook.write(outputStream);
@@ -308,24 +306,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	        }
 
 	    }
-	private static void JOptionPaneTest() {
-		    JDialog.setDefaultLookAndFeelDecorated(true);
-		    int response = JOptionPane.showConfirmDialog(null, "Do you want to save Constraints?", "Constraints Changed",
-		        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-		    if (response == JOptionPane.NO_OPTION) {
-		      
-		    } else if (response == JOptionPane.YES_OPTION) {
-
-		    } else if (response == JOptionPane.CLOSED_OPTION) {
-		    	
-		    }
-		  
-		}
 	
 	// Breaks down time Slot value down to individual hours and minutes so that it can be
 	// entered into a the Course as a java Time value.  Should account for pm values.
-	// Further work needs to be done breaking the days value down into measurable, and
-	// comparable values. possible 1-5 for each day, so that it can be easily calculated.
 	// Currently prints the course to be added to the console for error checking.
 	private static Course addCourse(Row newCourse) {
 			char[] timeBreak = newCourse.getCell(4).toString().toCharArray();
@@ -333,6 +316,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			int endHour = timeBreak[10]-'0' + (timeBreak[9]-'0')*10;
 			int startMinute = timeBreak[4]-'0' + (timeBreak[3]-'0')*10;
 			int endMinute = timeBreak[13]-'0' + (timeBreak[12]-'0')*10;
+			int[] dayArray = new int[5];
 			String days = null;
 			StringTokenizer daysBreak = new StringTokenizer(newCourse.getCell(4).toString());
 			while (daysBreak.hasMoreElements()) {
@@ -344,15 +328,21 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			if (timeBreak[15] == 'p' && endHour != 12) {
 				endHour+=12;
 			}
+			if (days.contains("Mo")) {dayArray[0] = 1;}
+			if (days.contains("Tu")) {dayArray[1] = 1;}
+			if (days.contains("We")) {dayArray[2] = 1;}
+			if (days.contains("Th")) {dayArray[3] = 1;}
+			if (days.contains("Fr")) {dayArray[4] = 1;}
+			
 			Time startTime = new Time(startHour, startMinute, 0);
 			Time endTime = new Time(endHour, endMinute, 0);
-			Course course = new Course(newCourse.getRowNum(),newCourse.getCell(2).toString(), startTime, endTime, days, newCourse.getCell(7).toString(), newCourse.getCell(6).toString());
+			Course course = new Course(newCourse.getRowNum(),newCourse.getCell(1).getNumericCellValue(),newCourse.getCell(2).toString(), startTime, endTime,newCourse.getCell(5).toString(), days, dayArray, newCourse.getCell(7).toString(), newCourse.getCell(6).toString());
 			System.out.print(course.toString());
 			return course;
 	}
 	
 	// Takes courseList and workbook for comparisons and highlighting fields that are in Conflict.
-	private static void checkProfessors(ArrayList<Course> courseList,XSSFWorkbook workbook) {
+	private static void checkProfessorsRooms(ArrayList<Course> courseList,XSSFWorkbook workbook) {
 		
 		XSSFSheet sheet = workbook.getSheetAt(0);
 		XSSFCellStyle style = workbook.createCellStyle();
@@ -361,13 +351,31 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		font.setBold(true);
 		style.setFont(font);
 		
+		XSSFCellStyle style2 = workbook.createCellStyle();
+		XSSFFont font2 = workbook.createFont();
+		font2.setColor(IndexedColors.BLUE.getIndex());
+		font2.setBold(true);
+		style2.setFont(font2);
+		
 		for(Course currentCourse:courseList) {
 			for(Course checkCourse:courseList) {
 				if (currentCourse.conflict(checkCourse)) {
-					Row conflictRow = sheet.getRow(currentCourse.getRowID());
-            		for (Cell testcell : conflictRow){
-        				testcell.setCellStyle(style);
-            		}
+					if (currentCourse.graduateLevel(checkCourse)) {
+						Row conflictRow = sheet.getRow(currentCourse.getRowID());
+        				Cell conflictCell = conflictRow.createCell(conflictRow.getLastCellNum());
+        				conflictCell.setCellValue("Potential Conflict Or Graduate Class");
+	            		for (Cell testcell : conflictRow){
+	        				testcell.setCellStyle(style2);
+
+	            		}	
+					} else {
+						Row conflictRow = sheet.getRow(currentCourse.getRowID());
+        				Cell conflictCell = conflictRow.createCell(conflictRow.getLastCellNum());
+        				conflictCell.setCellValue("Conflict");
+	            		for (Cell testcell : conflictRow){
+	        				testcell.setCellStyle(style);
+	            		}	
+					}
 				}
 			}
 		}
