@@ -7,6 +7,7 @@ public class Course {
 
 	private int rowID;
 	private int nbr;
+	private String subjectAbbre;
 	private String subject;
 	private Time startTime;
 	private Time endTime;
@@ -16,8 +17,9 @@ public class Course {
 	private String instructor;
 	private String location;
 	
-	Course(int rowNumber,Double nbr,String subject,Time start, Time end,String dates, String days,int[] dayArray,String instructor,String location){
+	Course(int rowNumber,String subjectAbbre, Double nbr,String subject,Time start, Time end,String dates, String days,int[] dayArray,String instructor,String location){
 		this.rowID = rowNumber;
+		this.subjectAbbre = subjectAbbre;
 		this.nbr = (int) Math.round(nbr);
 		this.subject = subject;
 		this.startTime = start;
@@ -150,6 +152,6 @@ public class Course {
 	}
 	
 	public String toString(){
-		return ( rowID + " " + nbr + " - " + subject + " -- " + instructor + " -- " + location + " -- " + startTime +" to "+ endTime + " on " + days +  " - " + dates +"\n");
+		return ( rowID + " " + subjectAbbre + nbr + " - " + subject + " -- " + instructor + " -- " + location + " -- " + startTime +" to "+ endTime + " on " + days +  " - " + dates +"\n");
 	}
 }

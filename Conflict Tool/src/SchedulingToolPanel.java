@@ -35,7 +35,10 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	private JTextArea textField;
 	private JTextArea textFieldReport;
 	private File constraints;
+	private String reportPath;
+	private Boolean reportFileChosen;
 	private ArrayList<Course> courseList = new ArrayList<Course>();
+	private ArrayList<String> constraintList = new ArrayList<String>();
 	
 	SchedulingToolPanel(){
 	
@@ -103,9 +106,11 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		JButton src = (JButton) e.getSource();
 		
 		if (src == importButton){
-			if(chooseFile() != null){
 			chooseFile();
-			loadConstraints();	
+			if(reportFileChosen == true){
+				loadConstraints();	
+				//System.out.println(constraintList);
+				
 			}
 			
 		} else if (src == exportButton){
@@ -124,11 +129,14 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 		final JFileChooser fc = new JFileChooser();
 		int status = fc.showOpenDialog(this);
-
+		
 		if(status == JFileChooser.CANCEL_OPTION){
+			reportFileChosen = false;
 			return null;
 		} else if(status == JFileChooser.APPROVE_OPTION){
-		textFieldReport.setText(fc.getSelectedFile().getPath());
+			textFieldReport.setText(fc.getSelectedFile().getPath());
+			reportPath = fc.getSelectedFile().getPath();
+			reportFileChosen = true;
 		}
 
 		return fc.getSelectedFile();
@@ -177,13 +185,15 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			e1.printStackTrace();
 		}
 			textField.setText(b.toString());
+			tokenizeConstraints(b.toString());	
 	}
 	
 	public void updateWorkbook(){
 		
 		try {
 			
-		FileInputStream inputStream = new FileInputStream(new File("/Users/davidtovar/Downloads/Spring 2019 Validation Report Example.xlsx"));
+		FileInputStream inputStream = new FileInputStream(new File
+				(reportPath));
         XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
         
         XSSFSheet sheet = workbook.getSheetAt(0);
@@ -296,7 +306,7 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			
 			Time startTime = new Time(startHour, startMinute, 0);
 			Time endTime = new Time(endHour, endMinute, 0);
-			Course course = new Course(newCourse.getRowNum(),newCourse.getCell(1).getNumericCellValue(),newCourse.getCell(2).toString(), startTime, endTime,newCourse.getCell(5).toString(), days, dayArray, newCourse.getCell(7).toString(), newCourse.getCell(6).toString());
+			Course course = new Course(newCourse.getRowNum(),newCourse.getCell(0).toString(),newCourse.getCell(1).getNumericCellValue(),newCourse.getCell(2).toString(), startTime, endTime,newCourse.getCell(5).toString(), days, dayArray, newCourse.getCell(7).toString(), newCourse.getCell(6).toString());
 			System.out.print(course.toString());
 			return course;
 	}
@@ -338,6 +348,14 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 					}
 				}
 			}
+		}
+	}
+	
+	private void tokenizeConstraints(String constraints){
+		
+		StringTokenizer st = new StringTokenizer(constraints, " )\n");
+		while(st.hasMoreTokens()){
+			constraintList.add(st.nextToken());
 		}
 	}
 }
