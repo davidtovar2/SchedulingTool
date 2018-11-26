@@ -24,6 +24,10 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+/**
+ * @author Jake Olsen, David Tovar
+ *
+ */
 public class SchedulingToolPanel extends JPanel implements ActionListener {
 	
 
@@ -40,6 +44,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	private ArrayList<Course> courseList = new ArrayList<Course>();
 	private ArrayList<String> constraintList = new ArrayList<String>();
 	
+	/**
+	 * 
+	 */
 	SchedulingToolPanel(){
 	
 		constraints = new File("resources/textConstraints.txt");
@@ -99,6 +106,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 	
@@ -125,6 +135,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 	}
 	
+	/**
+	 * @return
+	 */
 	private File chooseFile(){
 		
 		final JFileChooser fc = new JFileChooser();
@@ -144,6 +157,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	}
 	
 	// opens Constraints file location.
+	/**
+	 * @return
+	 */
 	private File constraintsFile(){
 		
 		final JFileChooser fc = new JFileChooser();
@@ -162,6 +178,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		
 	}
 	
+	/**
+	 * 
+	 */
 	private void loadConstraints(){
 		
 		FileReader fr = null;
@@ -188,6 +207,9 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 			tokenizeConstraints(b.toString());	
 	}
 	
+	/**
+	 * 
+	 */
 	public void updateWorkbook(){
 		
 		try {
@@ -256,6 +278,10 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 		} 
 	}
 
+	/**
+	 * @param cNew
+	 * @param cOld
+	 */
 	private static void cloneCell( XSSFCell cNew, XSSFCell cOld ){
 	       
 			cNew.setCellComment( cOld.getCellComment() );
@@ -280,6 +306,10 @@ public class SchedulingToolPanel extends JPanel implements ActionListener {
 	// Breaks down time Slot value down to individual hours and minutes so that it can be
 	// entered into a the Course as a java Time value.  Should account for pm values.
 	// Currently prints the course to be added to the console for error checking.
+	/**
+	 * @param newCourse
+	 * @return
+	 */
 	private static Course addCourse(Row newCourse) {
 			char[] timeBreak = newCourse.getCell(4).toString().toCharArray();
 			int startHour = timeBreak[1]-'0' + (timeBreak[0]-'0')*10;
