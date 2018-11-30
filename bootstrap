@@ -1,0 +1,15 @@
+#!/bin/bash
+
+(cd ~/Downloads; wget http://apache.claz.org/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz)
+
+cd /opt
+sudo tar -xvzf ~/Downloads/apache-maven-3.6.0-bin.tar.gz
+M2_HOME="/opt/apache-maven-3.6.0"
+~/opt/apache-maven-3.6.0/bin
+
+export M2_HOME=/usr/local/apache-maven/apache-maven-3.6.0
+export M2=$M2_HOME/bin
+export MAVEN_OPTS=-Xms256m -Xmx512m
+export PATH=$M2:$PATH
+
+mvn --version
