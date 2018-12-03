@@ -13,3 +13,14 @@ export MAVEN_OPTS=-Xms256m -Xmx512m
 export PATH=$M2:$PATH
 
 mvn --version
+
+(cd ~/Downloads; wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" https://download.oracle.com/otn-pub/java/jdk/11.0.1+13/90cf5d8f270a4347a95050320eef3fb7/jdk-11.0.1_linux-x64_bin.tar.gz)
+
+cd ~/Downloads
+sudo tar zxvf jdk-11.0.1_linux-x64_bin.tar.gz
+
+JAVA_HOME=/usr/local/jdk-11.0.1
+PATH=$PATH:$HOME/bin:$JAVA_HOME/bin
+export JAVA_HOME
+export PATH
+
